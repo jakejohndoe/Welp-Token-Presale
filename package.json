@@ -12,8 +12,11 @@
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.2.10",
     "@tanstack/react-query": "^5.90.16",
+    "canvas-confetti": "^1.9.4",
+    "framer-motion": "^12.26.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-icons": "^5.5.0",
     "viem": "^2.44.1",
     "wagmi": "^2.19.5"
   },
