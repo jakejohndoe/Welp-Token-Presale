@@ -436,7 +436,7 @@ function App() {
       {/* Floating Balance Card */}
       {isConnected && (
         <motion.div
-          className="fixed top-32 right-6 bg-white/10 backdrop-blur-lg rounded-2xl p-3 border border-white/20 shadow-2xl z-40 w-[280px]"
+          className="fixed top-40 right-6 bg-white/10 backdrop-blur-lg rounded-2xl p-3 border border-white/20 shadow-2xl z-40 w-[280px]"
           initial={{ opacity: 0, x: 100, y: -20 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
