@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { useAccount, useBalance, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { formatEther, parseEther } from 'viem'
 import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
+import CountUp from 'react-countup'
 import { FaTwitter, FaInstagram, FaLinkedin, FaTimes, FaExternalLinkAlt, FaSpinner } from 'react-icons/fa'
 import { contracts } from './config/contracts'
 
@@ -70,7 +71,7 @@ function App() {
     setTimeout(() => setToast(null), 5000)
   }
 
-  const handleSellAfterApproval = async () => {
+  const handleSellAfterApproval = useCallback(async () => {
     try {
       const tokens = parseEther(pendingSellAmount)
 
@@ -87,7 +88,7 @@ function App() {
       showToast('Sale failed', 'error')
       console.error(error)
     }
-  }
+  }, [pendingSellAmount, sellTokens])
 
   useEffect(() => {
     if (isBuySuccess && buyHash) {
@@ -111,7 +112,7 @@ function App() {
         hash: buyHash
       })
     }
-  }, [isBuySuccess, buyHash, pendingBuyAmount])
+  }, [isBuySuccess, buyHash, pendingBuyAmount, refetchWelpBalance, refetchSupply])
 
   useEffect(() => {
     if (isSellSuccess && sellHash) {
@@ -135,13 +136,13 @@ function App() {
         hash: sellHash
       })
     }
-  }, [isSellSuccess, sellHash, pendingSellAmount])
+  }, [isSellSuccess, sellHash, pendingSellAmount, refetchWelpBalance, refetchSupply])
 
   useEffect(() => {
     if (isApproveSuccess && pendingSellAmount) {
       handleSellAfterApproval()
     }
-  }, [isApproveSuccess, pendingSellAmount])
+  }, [isApproveSuccess, pendingSellAmount, handleSellAfterApproval])
 
   const calculateBuyCost = (amount) => {
     if (!amount || !buyPrice) return '0'
@@ -253,6 +254,12 @@ function App() {
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#4F7FFF] to-[#A855F7]">
+      {/* DEBUG: NUCLEAR OPTION - Super Obvious Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-10">
+        <div className="absolute top-20 left-20 w-96 h-96 bg-yellow-500 rounded-full blur-xl opacity-70 border-4 border-red-500" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500 rounded-full blur-xl opacity-70 border-4 border-green-500" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-pink-500 rounded-full blur-xl opacity-70 border-4 border-purple-500 -translate-x-1/2 -translate-y-1/2" />
+      </div>
       {/* Navbar */}
       <motion.nav
         className="flex items-center justify-between pl-2 pr-8 py-1"
@@ -279,32 +286,57 @@ function App() {
 
       {isConnected && (
         <motion.div
-          className="absolute top-16 right-6 bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/30 shadow-lg z-40 w-auto min-w-[265px]"
+          className="absolute top-16 right-6 bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/30 shadow-lg z-40 w-auto min-w-[265px] transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1"
           initial={{ opacity: 0, x: 100, y: -20 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
+          whileHover={{
+            scale: 1.02,
+            boxShadow: "0 20px 60px -10px rgba(255, 215, 0, 0.3)"
+          }}
         >
           <h3 className="text-sm font-nunito font-semibold text-white/70 mb-2 text-center">Your Balances</h3>
           <div className="grid grid-cols-2 gap-2 mb-2">
             <div className="bg-white/5 rounded-lg p-2 text-center">
               <p className="text-white/60 text-xs mb-1 font-nunito">ETH</p>
               <p className="text-sm font-bold text-white font-nunito">
-                {ethBalance ? parseFloat(formatBalance(ethBalance.value)).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '0'}
+                <CountUp
+                  end={ethBalance ? parseFloat(formatBalance(ethBalance.value)) : 0}
+                  decimals={3}
+                  duration={1}
+                  preserveValue={true}
+                />
               </p>
             </div>
             <div className="bg-white/5 rounded-lg p-2 text-center">
               <p className="text-white/60 text-xs mb-1 font-nunito">WELP</p>
               <p className="text-sm font-bold text-white font-nunito">
-                {parseFloat(formatBalance(welpBalance)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                <CountUp
+                  end={parseFloat(formatBalance(welpBalance))}
+                  decimals={0}
+                  duration={1}
+                  preserveValue={true}
+                />
               </p>
             </div>
           </div>
           <motion.button
             onClick={addTokenToWallet}
-            whileHover={{ scale: 1.05, backgroundColor: "#FFD54F" }}
+            className="w-full text-xs py-1.5 bg-welp-yellow text-welp-text font-nunito font-semibold rounded-full shadow-lg shadow-yellow-400/50"
+            animate={{
+              boxShadow: [
+                "0 10px 30px -5px rgba(255, 215, 0, 0.5)",
+                "0 10px 40px -5px rgba(255, 215, 0, 0.8)",
+                "0 10px 30px -5px rgba(255, 215, 0, 0.5)"
+              ]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            transition={{ duration: 0.3 }}
-            className="w-full text-xs py-1.5 bg-welp-yellow text-welp-text font-nunito font-semibold rounded-full "
             title="Add WELP token to MetaMask"
           >
             + Add WELP to Wallet
@@ -348,10 +380,14 @@ function App() {
 
         {/* Supply Tracker */}
         <motion.div
-          className="bg-white/10 backdrop-blur-sm rounded-3xl p-3 mb-3 border border-white/30 shadow-lg max-w-4xl mx-auto"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          className="bg-white/10 backdrop-blur-sm rounded-3xl p-3 mb-3 border border-white/30 shadow-lg max-w-4xl mx-auto transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          whileHover={{
+            scale: 1.02,
+            boxShadow: "0 20px 60px -10px rgba(255, 215, 0, 0.3)"
+          }}
         >
           <h2 className="text-lg font-fredoka font-bold text-white mb-2">Supply Tracker</h2>
           <div className="mb-2">
@@ -359,13 +395,25 @@ function App() {
               <span>{formatBalance(totalSupply)} WELP</span>
               <span>1,000,000 WELP</span>
             </div>
-            <div className="relative w-full bg-white/20 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-[#FFC107] via-[#FFD54F] to-[#FFC107] h-2 rounded-full transition-all duration-700 ease-out relative"
-                style={{ width: `${supplyPercentage}%` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-bounce"></div>
+            <div className="relative overflow-hidden">
+              <div className="h-2 bg-white/30 rounded-full">
+                <div
+                  className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full relative overflow-hidden transition-all duration-700 ease-out"
+                  style={{ width: `${supplyPercentage}%` }}
+                >
+                  {/* Shimmer effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                    animate={{
+                      x: ['-100%', '200%']
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -381,9 +429,16 @@ function App() {
               className="grid md:grid-cols-2 gap-6 mb-3 max-w-4xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg hover:bg-white/15 transition-all duration-300">
+              <motion.div
+                className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1"
+                whileHover={{
+                  scale: 1.02,
+                  boxShadow: "0 20px 60px -10px rgba(255, 215, 0, 0.3)"
+                }}
+                transition={{ duration: 0.3 }}
+              >
                 <h3 className="text-2xl font-fredoka font-bold text-white mb-4">Buy WELP Tokens</h3>
                 <div className="space-y-4">
                   <div>
@@ -417,9 +472,16 @@ function App() {
                     {isBuyPending || isTransactionPending ? 'Processing...' : 'Buy WELP'}
                   </motion.button>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg hover:bg-white/15 transition-all duration-300">
+              <motion.div
+                className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1"
+                whileHover={{
+                  scale: 1.02,
+                  boxShadow: "0 20px 60px -10px rgba(255, 215, 0, 0.3)"
+                }}
+                transition={{ duration: 0.3 }}
+              >
                 <h3 className="text-2xl font-fredoka font-bold text-white mb-4">Sell WELP Tokens</h3>
                 <div className="space-y-4">
                   <div>
@@ -453,7 +515,7 @@ function App() {
                     {isApprovePending ? 'Approving...' : isSellPending || isTransactionPending ? 'Processing...' : 'Sell WELP'}
                   </motion.button>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
 
           </>
@@ -461,10 +523,14 @@ function App() {
 
         {!isConnected && (
           <motion.div
-            className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 text-center border border-white/30 shadow-lg max-w-2xl mx-auto"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 text-center border border-white/30 shadow-lg max-w-2xl mx-auto transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
+            whileHover={{
+              scale: 1.02,
+              boxShadow: "0 20px 60px -10px rgba(255, 215, 0, 0.3)"
+            }}
           >
             <h2 className="text-3xl font-fredoka font-bold text-white mb-4">
               Connect Your Wallet
