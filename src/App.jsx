@@ -436,7 +436,7 @@ function App() {
       {/* Floating Balance Card */}
       {isConnected && (
         <motion.div
-          className="fixed top-28 right-6 bg-white/10 backdrop-blur-lg rounded-2xl p-3 border border-white/20 shadow-2xl z-40 w-[280px]"
+          className="fixed top-32 right-6 bg-white/10 backdrop-blur-lg rounded-2xl p-3 border border-white/20 shadow-2xl z-40 w-[280px]"
           initial={{ opacity: 0, x: 100, y: -20 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
@@ -517,12 +517,11 @@ function App() {
       {/* Toast Notifications */}
       {toast && (
         <motion.div
-          className={`fixed bottom-8 right-8 px-6 py-4 rounded-xl backdrop-blur-lg border border-white/20 flex items-center space-x-3 shadow-2xl ${
-            toast.type === 'success' ? 'bg-green-500/20 text-green-100' :
+          className={`fixed bottom-8 right-8 px-6 py-4 rounded-xl backdrop-blur-lg border border-white/20 flex items-center space-x-3 shadow-2xl ${toast.type === 'success' ? 'bg-green-500/20 text-green-100' :
             toast.type === 'error' ? 'bg-red-500/20 text-red-100' :
-            toast.type === 'pending' ? 'bg-blue-500/20 text-blue-100' :
-            'bg-blue-500/20 text-blue-100'
-          }`}
+              toast.type === 'pending' ? 'bg-blue-500/20 text-blue-100' :
+                'bg-blue-500/20 text-blue-100'
+            }`}
           initial={{ opacity: 0, x: 100 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 100 }}
