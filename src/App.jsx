@@ -255,7 +255,7 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-[#4F7FFF] to-[#A855F7]">
       {/* Navbar */}
       <motion.nav
-        className="flex items-center justify-between px-2 py-1"
+        className="flex items-center justify-between pl-2 pr-8 py-1"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -267,7 +267,9 @@ function App() {
             className="h-64 hover:opacity-80 transition-opacity"
           />
         </a>
-        <ConnectButton />
+        <div className="sticky top-4 right-6 z-50 ml-auto">
+          <ConnectButton />
+        </div>
       </motion.nav>
 
       <div className="container mx-auto px-4 pb-8">
@@ -434,29 +436,29 @@ function App() {
       {/* Floating Balance Card */}
       {isConnected && (
         <motion.div
-          className="fixed top-32 right-2 bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 shadow-2xl z-40 min-w-[280px]"
+          className="fixed top-28 right-6 bg-white/10 backdrop-blur-lg rounded-2xl p-3 border border-white/20 shadow-2xl z-40 w-[280px]"
           initial={{ opacity: 0, x: 100, y: -20 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <h3 className="text-sm font-semibold text-white/70 mb-3 text-center">Your Balances</h3>
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <div className="bg-white/5 rounded-xl p-3 text-center">
+          <h3 className="text-sm font-semibold text-white/70 mb-2 text-center">Your Balances</h3>
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="bg-white/5 rounded-lg p-2 text-center">
               <p className="text-white/60 text-xs mb-1">ETH</p>
-              <p className="text-lg font-bold text-white">
+              <p className="text-sm font-bold text-white">
                 {ethBalance ? parseFloat(formatBalance(ethBalance.value)).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '0'}
               </p>
             </div>
-            <div className="bg-white/5 rounded-xl p-3 text-center">
+            <div className="bg-white/5 rounded-lg p-2 text-center">
               <p className="text-white/60 text-xs mb-1">WELP</p>
-              <p className="text-lg font-bold text-white">
+              <p className="text-sm font-bold text-white">
                 {parseFloat(formatBalance(welpBalance)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </p>
             </div>
           </div>
           <button
             onClick={addTokenToWallet}
-            className="w-full text-xs py-2 bg-[#FFC107] text-black font-bold rounded-lg hover:bg-[#FFD54F] transition-all hover:scale-105"
+            className="w-full text-xs py-1.5 bg-[#FFC107] text-black font-bold rounded-lg hover:bg-[#FFD54F] transition-all hover:scale-105"
             title="Add WELP token to MetaMask"
           >
             + Add WELP to Wallet
@@ -472,19 +474,17 @@ function App() {
         transition={{ duration: 0.5, delay: 1 }}
       >
         <div className="container mx-auto px-6">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="flex items-center justify-center space-x-6">
-              <img
-                src="/icons/light-footer-logo.png"
-                alt="Welp"
-                className="h-6 opacity-80"
-                onError={(e) => { e.target.style.display = 'none' }}
-              />
-            </div>
+          <div className="flex items-center justify-between">
+            <img
+              src="/icons/light-footer-logo.png"
+              alt="Welp"
+              className="h-16 opacity-80"
+              onError={(e) => { e.target.style.display = 'none' }}
+            />
             <p className="text-white/60 text-sm">
               © 2026 Welp Network, LLC
             </p>
-            <div className="flex items-center justify-center space-x-4">
+            <div className="flex items-center space-x-4">
               <a
                 href="https://twitter.com/welpnetwork"
                 target="_blank"
