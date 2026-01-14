@@ -252,7 +252,7 @@ function App() {
   const supplyPercentage = totalSupply ? (Number(formatEther(totalSupply)) / 1000000 * 100).toFixed(2) : '0'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#4F7FFF] to-[#A855F7]">
+    <div className="relative min-h-screen bg-gradient-to-br from-[#4F7FFF] to-[#A855F7]">
       {/* Navbar */}
       <motion.nav
         className="flex items-center justify-between pl-2 pr-8 py-1"
@@ -267,10 +267,50 @@ function App() {
             className="h-64 hover:opacity-80 transition-opacity"
           />
         </a>
-        <div className="sticky top-4 right-6 z-50 ml-auto">
-          <ConnectButton />
+        <div className="ml-auto">
+          {/* Wallet button will be positioned absolutely outside navbar */}
         </div>
       </motion.nav>
+
+      {/* Absolutely positioned top-right elements */}
+      <div className="absolute top-4 right-6 z-50">
+        <ConnectButton />
+      </div>
+
+      {isConnected && (
+        <motion.div
+          className="absolute top-16 right-6 bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/30 shadow-lg z-40 w-auto min-w-[265px]"
+          initial={{ opacity: 0, x: 100, y: -20 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <h3 className="text-sm font-nunito font-semibold text-white/70 mb-2 text-center">Your Balances</h3>
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="bg-white/5 rounded-lg p-2 text-center">
+              <p className="text-white/60 text-xs mb-1 font-nunito">ETH</p>
+              <p className="text-sm font-bold text-white font-nunito">
+                {ethBalance ? parseFloat(formatBalance(ethBalance.value)).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '0'}
+              </p>
+            </div>
+            <div className="bg-white/5 rounded-lg p-2 text-center">
+              <p className="text-white/60 text-xs mb-1 font-nunito">WELP</p>
+              <p className="text-sm font-bold text-white font-nunito">
+                {parseFloat(formatBalance(welpBalance)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </p>
+            </div>
+          </div>
+          <motion.button
+            onClick={addTokenToWallet}
+            whileHover={{ scale: 1.05, backgroundColor: "#FFD54F" }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            className="w-full text-xs py-1.5 bg-welp-yellow text-welp-text font-nunito font-semibold rounded-full "
+            title="Add WELP token to MetaMask"
+          >
+            + Add WELP to Wallet
+          </motion.button>
+        </motion.div>
+      )}
 
       <div className="container mx-auto px-4 pb-8">
         {/* Hero Section */}
@@ -280,10 +320,10 @@ function App() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-1 tracking-tight leading-tight">
-            Welp Token Presale
+          <h1 className="text-5xl md:text-7xl font-fredoka font-bold text-white mb-1 tracking-tight leading-tight">
+            WELP Token Presale
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-1 font-medium">
+          <p className="text-xl md:text-2xl font-nunito text-white/90 mb-1 font-medium">
             Get free Sepolia ETH from the faucet and try the WELP token presale
           </p>
         </motion.div>
@@ -299,7 +339,7 @@ function App() {
             href="https://faucet.metana.io/#"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-3 px-8 py-4 bg-[#FFC107] text-black font-bold rounded-2xl hover:bg-[#FFD54F] hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="inline-flex items-center space-x-3 px-8 py-4 bg-welp-yellow text-welp-text font-nunito font-semibold rounded-full  shadow-lg "
           >
             <span>Need Sepolia ETH? → Get Free Testnet Tokens</span>
             <FaExternalLinkAlt />
@@ -308,12 +348,12 @@ function App() {
 
         {/* Supply Tracker */}
         <motion.div
-          className="bg-white/10 backdrop-blur-lg rounded-3xl p-3 mb-3 border border-white/20 max-w-4xl mx-auto"
+          className="bg-white/10 backdrop-blur-sm rounded-3xl p-3 mb-3 border border-white/30 shadow-lg max-w-4xl mx-auto"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <h2 className="text-lg font-semibold text-white mb-2">Supply Tracker</h2>
+          <h2 className="text-lg font-fredoka font-bold text-white mb-2">Supply Tracker</h2>
           <div className="mb-2">
             <div className="flex justify-between text-white/90 mb-1 text-sm">
               <span>{formatBalance(totalSupply)} WELP</span>
@@ -343,69 +383,75 @@ function App() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.6 }}
             >
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                <h3 className="text-2xl font-semibold text-white mb-4">Buy WELP Tokens</h3>
+              <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg hover:bg-white/15 transition-all duration-300">
+                <h3 className="text-2xl font-fredoka font-bold text-white mb-4">Buy WELP Tokens</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-white/70 mb-3 font-medium">Amount (WELP)</label>
+                    <label className="block text-white/70 mb-3 font-nunito font-semibold">Amount (WELP)</label>
                     <input
                       type="number"
                       value={buyAmount}
                       onChange={(e) => setBuyAmount(e.target.value)}
                       placeholder="0"
-                      className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#FFC107] focus:bg-white/15 transition-all text-lg"
+                      className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-welp-yellow focus:bg-white/15 transition-all text-lg font-nunito"
                       disabled={isBuyPending || isTransactionPending}
                     />
                   </div>
                   <div className="bg-white/5 rounded-xl p-4">
-                    <p className="text-white/70 text-sm mb-1">Cost</p>
-                    <p className="text-3xl font-bold text-white">
+                    <p className="text-white/70 text-sm mb-1 font-nunito font-semibold">Cost</p>
+                    <p className="text-3xl font-bold text-white font-nunito">
                       {calculateBuyCost(buyAmount)} ETH
                     </p>
-                    <p className="text-white/50 text-xs mt-1">
+                    <p className="text-white/50 text-xs mt-1 font-nunito">
                       Rate: 0.001 ETH per WELP
                     </p>
                   </div>
-                  <button
+                  <motion.button
                     onClick={handleBuy}
                     disabled={!buyAmount || parseFloat(buyAmount) <= 0 || isBuyPending || isTransactionPending}
-                    className="w-full py-4 bg-[#FFC107] text-black font-bold rounded-xl hover:bg-[#FFD54F] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-200 text-lg shadow-lg hover:shadow-xl"
+                    whileHover={{ scale: 1.05, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full py-4 bg-welp-yellow text-welp-text font-nunito font-semibold rounded-full disabled:opacity-50 disabled:cursor-not-allowed text-lg shadow-lg "
                   >
                     {isBuyPending || isTransactionPending ? 'Processing...' : 'Buy WELP'}
-                  </button>
+                  </motion.button>
                 </div>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                <h3 className="text-2xl font-semibold text-white mb-4">Sell WELP Tokens</h3>
+              <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg hover:bg-white/15 transition-all duration-300">
+                <h3 className="text-2xl font-fredoka font-bold text-white mb-4">Sell WELP Tokens</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-white/70 mb-3 font-medium">Amount (WELP)</label>
+                    <label className="block text-white/70 mb-3 font-nunito font-semibold">Amount (WELP)</label>
                     <input
                       type="number"
                       value={sellAmount}
                       onChange={(e) => setSellAmount(e.target.value)}
                       placeholder="0"
-                      className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#FFC107] focus:bg-white/15 transition-all text-lg"
+                      className="w-full px-4 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-welp-yellow focus:bg-white/15 transition-all text-lg font-nunito"
                       disabled={isSellPending || isApprovePending || isTransactionPending}
                     />
                   </div>
                   <div className="bg-white/5 rounded-xl p-4">
-                    <p className="text-white/70 text-sm mb-1">You'll receive</p>
-                    <p className="text-3xl font-bold text-white">
+                    <p className="text-white/70 text-sm mb-1 font-nunito font-semibold">You'll receive</p>
+                    <p className="text-3xl font-bold text-white font-nunito">
                       {calculateSellPayout(sellAmount)} ETH
                     </p>
-                    <p className="text-white/50 text-xs mt-1">
+                    <p className="text-white/50 text-xs mt-1 font-nunito">
                       Rate: 0.0005 ETH per WELP
                     </p>
                   </div>
-                  <button
+                  <motion.button
                     onClick={handleSell}
                     disabled={!sellAmount || parseFloat(sellAmount) <= 0 || isSellPending || isApprovePending || isTransactionPending}
-                    className="w-full py-4 bg-[#FFC107] text-black font-bold rounded-xl hover:bg-[#FFD54F] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-200 text-lg shadow-lg hover:shadow-xl"
+                    whileHover={{ scale: 1.05, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full py-4 bg-welp-yellow text-welp-text font-nunito font-semibold rounded-full disabled:opacity-50 disabled:cursor-not-allowed text-lg shadow-lg "
                   >
                     {isApprovePending ? 'Approving...' : isSellPending || isTransactionPending ? 'Processing...' : 'Sell WELP'}
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </motion.div>
@@ -415,15 +461,15 @@ function App() {
 
         {!isConnected && (
           <motion.div
-            className="bg-white/10 backdrop-blur-lg rounded-3xl p-12 text-center border border-white/20 max-w-2xl mx-auto"
+            className="bg-white/10 backdrop-blur-sm rounded-3xl p-12 text-center border border-white/30 shadow-lg max-w-2xl mx-auto"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <h2 className="text-3xl font-semibold text-white mb-4">
+            <h2 className="text-3xl font-fredoka font-bold text-white mb-4">
               Connect Your Wallet
             </h2>
-            <p className="text-white/70 mb-8 text-lg">
+            <p className="text-white/70 mb-8 text-lg font-nunito">
               Please connect your wallet to participate in the presale
             </p>
             <div className="flex justify-center">
@@ -433,38 +479,6 @@ function App() {
         )}
       </div>
 
-      {/* Floating Balance Card */}
-      {isConnected && (
-        <motion.div
-          className="fixed top-40 right-6 bg-white/10 backdrop-blur-lg rounded-2xl p-3 border border-white/20 shadow-2xl z-40 w-[280px]"
-          initial={{ opacity: 0, x: 100, y: -20 }}
-          animate={{ opacity: 1, x: 0, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <h3 className="text-sm font-semibold text-white/70 mb-2 text-center">Your Balances</h3>
-          <div className="grid grid-cols-2 gap-2 mb-2">
-            <div className="bg-white/5 rounded-lg p-2 text-center">
-              <p className="text-white/60 text-xs mb-1">ETH</p>
-              <p className="text-sm font-bold text-white">
-                {ethBalance ? parseFloat(formatBalance(ethBalance.value)).toLocaleString(undefined, { maximumFractionDigits: 3 }) : '0'}
-              </p>
-            </div>
-            <div className="bg-white/5 rounded-lg p-2 text-center">
-              <p className="text-white/60 text-xs mb-1">WELP</p>
-              <p className="text-sm font-bold text-white">
-                {parseFloat(formatBalance(welpBalance)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={addTokenToWallet}
-            className="w-full text-xs py-1.5 bg-[#FFC107] text-black font-bold rounded-lg hover:bg-[#FFD54F] transition-all hover:scale-105"
-            title="Add WELP token to MetaMask"
-          >
-            + Add WELP to Wallet
-          </button>
-        </motion.div>
-      )}
 
       {/* Footer */}
       <motion.footer
@@ -481,7 +495,7 @@ function App() {
               className="h-16 opacity-80"
               onError={(e) => { e.target.style.display = 'none' }}
             />
-            <p className="text-white/60 text-sm">
+            <p className="text-white/60 text-sm font-nunito">
               © 2026 Welp Network, LLC
             </p>
             <div className="flex items-center space-x-4">
@@ -546,13 +560,13 @@ function App() {
             exit={{ scale: 0.8, y: 20 }}
           >
             <div className="text-6xl mb-4">
-              <FaSpinner className="animate-spin mx-auto text-[#FFC107]" />
+              <FaSpinner className="animate-spin mx-auto text-welp-yellow" />
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">Transaction Processing</h3>
-            <p className="text-white/80 mb-4">
+            <h3 className="text-2xl font-fredoka font-bold text-white mb-2">Transaction Processing</h3>
+            <p className="text-white/80 mb-4 font-nunito">
               Please wait while your transaction is being processed...
             </p>
-            <p className="text-white/60 text-sm">
+            <p className="text-white/60 text-sm font-nunito">
               Do not close this window or refresh the page
             </p>
           </motion.div>
@@ -574,8 +588,8 @@ function App() {
             exit={{ scale: 0.8, y: 20 }}
           >
             <div className="text-6xl mb-4">✅</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Success!</h3>
-            <p className="text-white/80 mb-6">
+            <h3 className="text-2xl font-fredoka font-bold text-white mb-2">Success!</h3>
+            <p className="text-white/80 mb-6 font-nunito">
               You {successModal.type === 'buy' ? 'bought' : 'sold'} {successModal.amount} WELP
             </p>
             <div className="flex space-x-3">
@@ -583,17 +597,20 @@ function App() {
                 href={`https://sepolia.etherscan.io/tx/${successModal.hash}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 py-3 bg-[#FFC107] text-black font-bold rounded-xl hover:bg-[#FFD54F] transition-all flex items-center justify-center space-x-2"
+                className="flex-1 py-3 bg-welp-yellow text-welp-text font-nunito font-semibold rounded-full hover:bg-[#FFD54F] transition-all duration-300 ease-out flex items-center justify-center space-x-2"
               >
                 <span>View on Etherscan</span>
                 <FaExternalLinkAlt />
               </a>
-              <button
+              <motion.button
                 onClick={() => setSuccessModal(null)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.3 }}
                 className="px-4 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all"
               >
                 <FaTimes />
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         </motion.div>
