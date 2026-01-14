@@ -141,7 +141,7 @@ function App() {
     if (isApproveSuccess && pendingSellAmount) {
       handleSellAfterApproval()
     }
-  }, [isApproveSuccess, pendingSellAmount, handleSellAfterApproval])
+  }, [isApproveSuccess, pendingSellAmount])
 
   const calculateBuyCost = (amount) => {
     if (!amount || !buyPrice) return '0'
