@@ -18,6 +18,8 @@ function App() {
   const [isTransactionPending, setIsTransactionPending] = useState(false)
   const [pendingBuyAmount, setPendingBuyAmount] = useState('')
   const [pendingSellAmount, setPendingSellAmount] = useState('')
+  const [transactionTimeoutId, setTransactionTimeoutId] = useState(null)
+  const [manualSoldCount, setManualSoldCount] = useState(240) // Start with current known value
 
   const { data: ethBalance } = useBalance({
     address,
@@ -36,8 +38,11 @@ function App() {
     address: contracts.welpToken.address,
     abi: contracts.welpToken.abi,
     functionName: 'totalSupply',
-    watch: true
+    watch: true,
+    pollingInterval: 5000 // Poll every 5 seconds for updates
   })
+
+  // Removed presale balance reading - using manual tracking instead
 
   const { data: buyPrice } = useReadContract({
     address: contracts.welpTokenSale.address,
@@ -55,15 +60,15 @@ function App() {
   const { writeContract: sellTokens, data: sellHash } = useWriteContract()
   const { writeContract: approveTokens, data: approveHash } = useWriteContract()
 
-  const { isLoading: isBuyPending, isSuccess: isBuySuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isBuyPending, isSuccess: isBuySuccess, isError: isBuyError, error: buyError } = useWaitForTransactionReceipt({
     hash: buyHash
   })
 
-  const { isLoading: isSellPending, isSuccess: isSellSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isSellPending, isSuccess: isSellSuccess, isError: isSellError, error: sellError } = useWaitForTransactionReceipt({
     hash: sellHash
   })
 
-  const { isLoading: isApprovePending, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isApprovePending, isSuccess: isApproveSuccess, isError: isApproveError, error: approveError } = useWaitForTransactionReceipt({
     hash: approveHash
   })
 
@@ -75,29 +80,73 @@ function App() {
   const handleSellAfterApproval = useCallback(async () => {
     try {
       const tokens = parseEther(pendingSellAmount)
+      showToast('Waiting for wallet confirmation...', 'pending')
 
-      sellTokens({
+      console.log('Attempting to send sell transaction...')
+
+      // This will THROW an error if user cancels - wagmi handles rejection properly
+      const txHash = await sellTokens({
         address: contracts.welpTokenSale.address,
         abi: contracts.welpTokenSale.abi,
         functionName: 'sellTokens',
         args: [tokens]
       })
 
-      showToast('Selling tokens...', 'pending')
+      console.log('Sell transaction sent successfully:', txHash)
+      showToast('Transaction sent! Waiting for confirmation...', 'pending')
+
+      // If we get here, sell transaction was sent successfully
+      console.log('Sell transaction sent, waiting for confirmation...')
+
     } catch (error) {
+      console.error('Sell transaction error:', error)
+      if (transactionTimeoutId) {
+        clearTimeout(transactionTimeoutId)
+        setTransactionTimeoutId(null)
+      }
       setIsTransactionPending(false)
-      showToast('Sale failed', 'error')
-      console.error(error)
+
+      // Check error message for cancellation
+      const errorMsg = error?.message?.toLowerCase() || ''
+
+      if (errorMsg.includes('user rejected') ||
+          errorMsg.includes('user denied') ||
+          errorMsg.includes('user cancelled') ||
+          errorMsg.includes('rejected') ||
+          error?.code === 'ACTION_REJECTED' ||
+          error?.name === 'UserRejectedRequestError') {
+        showToast('Transaction cancelled by user', 'error')
+      } else {
+        showToast(`Sale failed: ${error?.shortMessage || error?.message || 'Unknown error'}`, 'error')
+      }
     }
-  }, [pendingSellAmount, sellTokens])
+  }, [pendingSellAmount, sellTokens, transactionTimeoutId])
 
   useEffect(() => {
     if (isBuySuccess && buyHash) {
+      // Clear timeout
+      if (transactionTimeoutId) {
+        clearTimeout(transactionTimeoutId)
+        setTransactionTimeoutId(null)
+      }
+
       setIsTransactionPending(false)
       showToast('Purchase successful!', 'success')
+
+      // Update manual sold count
+      const boughtAmount = parseFloat(pendingBuyAmount)
+      setManualSoldCount(prev => prev + boughtAmount)
+      console.log(`Manual sold count updated: +${boughtAmount} tokens`)
+
       setBuyAmount('')
       refetchWelpBalance()
+
+      // Refetch supply immediately and again after a delay (manual tracking handles sold count)
       refetchSupply()
+      setTimeout(() => {
+        refetchSupply()
+        console.log('Supply refetched after buy transaction')
+      }, 2000)
 
       // Trigger confetti
       confetti({
@@ -113,15 +162,33 @@ function App() {
         hash: buyHash
       })
     }
-  }, [isBuySuccess, buyHash, pendingBuyAmount, refetchWelpBalance, refetchSupply])
+  }, [isBuySuccess, buyHash, pendingBuyAmount, refetchWelpBalance, refetchSupply, transactionTimeoutId])
 
   useEffect(() => {
     if (isSellSuccess && sellHash) {
+      // Clear timeout
+      if (transactionTimeoutId) {
+        clearTimeout(transactionTimeoutId)
+        setTransactionTimeoutId(null)
+      }
+
       setIsTransactionPending(false)
       showToast('Sale successful!', 'success')
+
+      // Update manual sold count (subtract for sell)
+      const soldAmount = parseFloat(pendingSellAmount)
+      setManualSoldCount(prev => prev - soldAmount)
+      console.log(`Manual sold count updated: -${soldAmount} tokens`)
+
       setSellAmount('')
       refetchWelpBalance()
+
+      // Refetch supply immediately and again after a delay (manual tracking handles sold count)
       refetchSupply()
+      setTimeout(() => {
+        refetchSupply()
+        console.log('Supply refetched after sell transaction')
+      }, 2000)
 
       // Trigger confetti
       confetti({
@@ -137,13 +204,58 @@ function App() {
         hash: sellHash
       })
     }
-  }, [isSellSuccess, sellHash, pendingSellAmount, refetchWelpBalance, refetchSupply])
+  }, [isSellSuccess, sellHash, pendingSellAmount, refetchWelpBalance, refetchSupply, transactionTimeoutId])
 
   useEffect(() => {
     if (isApproveSuccess && pendingSellAmount) {
       handleSellAfterApproval()
     }
   }, [isApproveSuccess, pendingSellAmount, handleSellAfterApproval])
+
+  // Handle buy transaction errors
+  useEffect(() => {
+    if (isBuyError && buyError) {
+      // Clear timeout
+      if (transactionTimeoutId) {
+        clearTimeout(transactionTimeoutId)
+        setTransactionTimeoutId(null)
+      }
+
+      setIsTransactionPending(false)
+      console.error('Buy transaction error:', buyError)
+      showToast(`Buy transaction failed: ${buyError.message || 'Unknown error'}`, 'error')
+    }
+  }, [isBuyError, buyError, transactionTimeoutId])
+
+  // Handle sell transaction errors
+  useEffect(() => {
+    if (isSellError && sellError) {
+      // Clear timeout
+      if (transactionTimeoutId) {
+        clearTimeout(transactionTimeoutId)
+        setTransactionTimeoutId(null)
+      }
+
+      setIsTransactionPending(false)
+      console.error('Sell transaction error:', sellError)
+      showToast(`Sell transaction failed: ${sellError.message || 'Unknown error'}`, 'error')
+    }
+  }, [isSellError, sellError, transactionTimeoutId])
+
+  // Handle approve transaction errors
+  useEffect(() => {
+    if (isApproveError && approveError) {
+      // Clear timeout
+      if (transactionTimeoutId) {
+        clearTimeout(transactionTimeoutId)
+        setTransactionTimeoutId(null)
+      }
+
+      setIsTransactionPending(false)
+      console.error('Approve transaction error:', approveError)
+      showToast(`Approval failed: ${approveError.message || 'Unknown error'}`, 'error')
+    }
+  }, [isApproveError, approveError, transactionTimeoutId])
 
   const calculateBuyCost = (amount) => {
     if (!amount || !buyPrice) return '0'
@@ -173,13 +285,34 @@ function App() {
       return
     }
 
+    // Clear any existing timeout
+    if (transactionTimeoutId) {
+      clearTimeout(transactionTimeoutId)
+      setTransactionTimeoutId(null)
+    }
+
+    // Safety timeout - force close after 60 seconds
+    const timeoutId = setTimeout(() => {
+      if (isTransactionPending) {
+        console.log('Transaction timeout triggered')
+        setIsTransactionPending(false)
+        showToast('Transaction timed out', 'error')
+      }
+    }, 60000)
+    setTransactionTimeoutId(timeoutId)
+
     try {
       const tokens = parseEther(buyAmount)
       const cost = (tokens * buyPrice) / BigInt(10 ** 18)
 
       setPendingBuyAmount(buyAmount)
       setIsTransactionPending(true)
-      buyTokens({
+      showToast('Waiting for wallet confirmation...', 'pending')
+
+      console.log('Attempting to send buy transaction...')
+
+      // This will THROW an error if user cancels - wagmi handles rejection properly
+      const txHash = await buyTokens({
         address: contracts.welpTokenSale.address,
         abi: contracts.welpTokenSale.abi,
         functionName: 'buyTokens',
@@ -187,11 +320,31 @@ function App() {
         value: cost
       })
 
-      showToast('Confirming transaction...', 'pending')
+      console.log('Buy transaction sent successfully:', txHash)
+      showToast('Transaction sent! Waiting for confirmation...', 'pending')
+
+      // If we get here, transaction was sent successfully
+      console.log('Transaction sent, waiting for confirmation...')
+
     } catch (error) {
+      console.error('Transaction error:', error)
+      clearTimeout(timeoutId)
+      setTransactionTimeoutId(null)
       setIsTransactionPending(false)
-      showToast('Transaction failed', 'error')
-      console.error(error)
+
+      // Check error message for cancellation
+      const errorMsg = error?.message?.toLowerCase() || ''
+
+      if (errorMsg.includes('user rejected') ||
+          errorMsg.includes('user denied') ||
+          errorMsg.includes('user cancelled') ||
+          errorMsg.includes('rejected') ||
+          error?.code === 'ACTION_REJECTED' ||
+          error?.name === 'UserRejectedRequestError') {
+        showToast('Transaction cancelled by user', 'error')
+      } else {
+        showToast(`Transaction failed: ${error?.shortMessage || error?.message || 'Unknown error'}`, 'error')
+      }
     }
   }
 
@@ -201,23 +354,64 @@ function App() {
       return
     }
 
+    // Clear any existing timeout
+    if (transactionTimeoutId) {
+      clearTimeout(transactionTimeoutId)
+      setTransactionTimeoutId(null)
+    }
+
+    // Safety timeout - force close after 60 seconds
+    const timeoutId = setTimeout(() => {
+      if (isTransactionPending) {
+        console.log('Transaction timeout triggered')
+        setIsTransactionPending(false)
+        showToast('Transaction timed out', 'error')
+      }
+    }, 60000)
+    setTransactionTimeoutId(timeoutId)
+
     try {
       const tokens = parseEther(sellAmount)
 
       setPendingSellAmount(sellAmount)
       setIsTransactionPending(true)
-      approveTokens({
+      showToast('Waiting for wallet confirmation...', 'pending')
+
+      console.log('Attempting to send approval transaction...')
+
+      // This will THROW an error if user cancels - wagmi handles rejection properly
+      const txHash = await approveTokens({
         address: contracts.welpToken.address,
         abi: contracts.welpToken.abi,
         functionName: 'approve',
         args: [contracts.welpTokenSale.address, tokens]
       })
 
-      showToast('Approving tokens...', 'pending')
+      console.log('Approval transaction sent successfully:', txHash)
+      showToast('Approval sent! Waiting for confirmation...', 'pending')
+
+      // If we get here, approval was sent successfully
+      console.log('Approval sent, waiting for confirmation...')
+
     } catch (error) {
+      console.error('Approval error:', error)
+      clearTimeout(timeoutId)
+      setTransactionTimeoutId(null)
       setIsTransactionPending(false)
-      showToast('Transaction failed', 'error')
-      console.error(error)
+
+      // Check error message for cancellation
+      const errorMsg = error?.message?.toLowerCase() || ''
+
+      if (errorMsg.includes('user rejected') ||
+          errorMsg.includes('user denied') ||
+          errorMsg.includes('user cancelled') ||
+          errorMsg.includes('rejected') ||
+          error?.code === 'ACTION_REJECTED' ||
+          error?.name === 'UserRejectedRequestError') {
+        showToast('Transaction cancelled by user', 'error')
+      } else {
+        showToast(`Approval failed: ${error?.shortMessage || error?.message || 'Unknown error'}`, 'error')
+      }
     }
   }
 
@@ -251,7 +445,9 @@ function App() {
     }
   }
 
-  const supplyPercentage = totalSupply ? (Number(formatEther(totalSupply)) / 1000000 * 100).toFixed(2) : '0'
+  // Manual tracking of sold tokens (more reliable than contract calculations)
+  const TOTAL_PRESALE_SUPPLY = 1000000 // 1 million WELP tokens for presale
+  const supplyPercentage = manualSoldCount ? (manualSoldCount / TOTAL_PRESALE_SUPPLY * 100).toFixed(2) : '0'
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#4F7FFF] to-[#A855F7]">
@@ -330,10 +526,10 @@ function App() {
             }}
             whileHover={{
               scale: 1.02,
-              boxShadow: "0 10px 40px -10px rgba(255, 215, 0, 0.4)"
+              boxShadow: "0 10px 40px -10px rgba(255, 215, 0, 0.4)",
+              transition: { duration: 0.2 }
             }}
             whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.2 }}
             title="Add WELP token to MetaMask"
           >
             + Add WELP to Wallet
@@ -391,8 +587,8 @@ function App() {
           <h2 className="text-lg font-fredoka font-bold text-white mb-2">Supply Tracker</h2>
           <div className="mb-2">
             <div className="flex justify-between text-white/90 mb-1 text-sm">
-              <span>{formatBalance(totalSupply)} WELP</span>
-              <span>1,000,000 WELP</span>
+              <span>{manualSoldCount.toLocaleString()} WELP</span>
+              <span>{TOTAL_PRESALE_SUPPLY.toLocaleString()} WELP</span>
             </div>
             <div className="relative overflow-hidden">
               <div className="h-2 bg-white/30 rounded-full">
@@ -627,9 +823,31 @@ function App() {
             <p className="text-white/80 mb-4 font-nunito">
               Please wait while your transaction is being processed...
             </p>
-            <p className="text-white/60 text-sm font-nunito">
-              Do not close this window or refresh the page
+            <p className="text-white/60 text-sm mb-6 font-nunito">
+              You can cancel this transaction at any time
             </p>
+
+            {/* Always visible cancel button */}
+            <motion.button
+              onClick={() => {
+                // Clear timeout
+                if (transactionTimeoutId) {
+                  clearTimeout(transactionTimeoutId)
+                  setTransactionTimeoutId(null)
+                }
+                // Clear transaction state
+                setIsTransactionPending(false)
+                setPendingBuyAmount('')
+                setPendingSellAmount('')
+                showToast('Transaction cancelled by user', 'error')
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-nunito font-medium border border-white/20 hover:border-white/30 transition-all duration-200"
+            >
+              Cancel Transaction
+            </motion.button>
           </motion.div>
         </motion.div>
       )}
