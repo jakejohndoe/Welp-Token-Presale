@@ -7,6 +7,7 @@ import confetti from 'canvas-confetti'
 import CountUp from 'react-countup'
 import { FaTwitter, FaInstagram, FaLinkedin, FaTimes, FaExternalLinkAlt, FaSpinner } from 'react-icons/fa'
 import { contracts } from './config/contracts'
+import AnimatedBackground from './components/AnimatedBackground'
 
 function App() {
   const { address, isConnected } = useAccount()
@@ -252,42 +253,9 @@ function App() {
 
   const supplyPercentage = totalSupply ? (Number(formatEther(totalSupply)) / 1000000 * 100).toFixed(2) : '0'
 
-  const orbConfigs = [
-    { size: 600, top: '5%', left: '10%', color: 'rgba(168,85,247,0.6)', duration: 20 },
-    { size: 500, top: '15%', left: '70%', color: 'rgba(59,130,246,0.5)', duration: 25 },
-    { size: 450, top: '60%', left: '20%', color: 'rgba(236,72,153,0.45)', duration: 22 },
-    { size: 400, top: '40%', left: '50%', color: 'rgba(20,184,166,0.5)', duration: 28 },
-    { size: 350, top: '70%', left: '75%', color: 'rgba(168,85,247,0.4)', duration: 24 },
-    { size: 300, top: '25%', left: '35%', color: 'rgba(236,72,153,0.35)', duration: 26 },
-  ]
-
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#4F7FFF] to-[#A855F7]">
-      {/* ==== Dynamic Network Orbs Background ==== */}
-      <div className="fixed inset-0 pointer-events-none -z-0 overflow-visible">
-        {orbConfigs.map((orb, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full"
-            style={{ width: orb.size, height: orb.size, top: orb.top, left: orb.left, background: `radial-gradient(circle, ${orb.color} 0%, transparent 10%)` }}
-            animate={{
-              x: [0, 40, -30, 0],
-              y: [0, 25, -20, 0],
-              scale: [1, 1.05, 0.95, 1],
-              opacity: [0.2, 0.35, 0.25, 0.2]
-            }}
-            transition={{ duration: orb.duration, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        ))}
-
-        <svg className="absolute inset-0 w-full h-full">
-          {/* Subtle network lines connecting orbs */}
-          <line x1="100" y1="100" x2="500" y2="400" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-          <line x1="600" y1="200" x2="400" y2="500" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-          <line x1="200" y1="400" x2="550" y2="250" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-          <line x1="300" y1="150" x2="650" y2="600" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-        </svg>
-      </div>
+      <AnimatedBackground />
 
       {/* Navbar */}
       <motion.nav
@@ -315,14 +283,10 @@ function App() {
 
       {isConnected && (
         <motion.div
-          className="absolute top-16 right-6 bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/30 shadow-lg z-40 w-auto min-w-[265px] transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1"
+          className="absolute top-16 right-6 bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/30 shadow-lg z-40 w-auto min-w-[265px]"
           initial={{ opacity: 0, x: 100, y: -20 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          whileHover={{
-            scale: 1.02,
-            boxShadow: "0 20px 60px -10px rgba(255, 215, 0, 0.3)"
-          }}
         >
           <h3 className="text-sm font-nunito font-semibold text-white/70 mb-2 text-center">Your Balances</h3>
           <div className="grid grid-cols-2 gap-2 mb-2">
@@ -364,8 +328,12 @@ function App() {
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{
+              scale: 1.02,
+              boxShadow: "0 10px 40px -10px rgba(255, 215, 0, 0.4)"
+            }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
             title="Add WELP token to MetaMask"
           >
             + Add WELP to Wallet
@@ -396,27 +364,29 @@ function App() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <a
+          <motion.a
             href="https://faucet.metana.io/#"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-3 px-8 py-4 bg-welp-yellow text-welp-text font-nunito font-semibold rounded-full  shadow-lg "
+            className="inline-flex items-center space-x-3 px-8 py-4 bg-welp-yellow text-welp-text font-nunito font-semibold rounded-full shadow-lg"
+            whileHover={{
+              scale: 1.02,
+              boxShadow: "0 10px 40px -10px rgba(255, 215, 0, 0.4)"
+            }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
           >
             <span>Need Sepolia ETH? → Get Free Testnet Tokens</span>
             <FaExternalLinkAlt />
-          </a>
+          </motion.a>
         </motion.div>
 
         {/* Supply Tracker */}
         <motion.div
-          className="bg-white/10 backdrop-blur-sm rounded-3xl p-3 mb-3 border border-white/30 shadow-lg max-w-4xl mx-auto transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1"
+          className="bg-white/10 backdrop-blur-sm rounded-3xl p-3 mb-3 border border-white/30 shadow-lg max-w-4xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          whileHover={{
-            scale: 1.02,
-            boxShadow: "0 20px 60px -10px rgba(255, 215, 0, 0.3)"
-          }}
         >
           <h2 className="text-lg font-fredoka font-bold text-white mb-2">Supply Tracker</h2>
           <div className="mb-2">
@@ -461,12 +431,10 @@ function App() {
               transition={{ duration: 0.5, delay: 0.4 }}
             >
               <motion.div
-                className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1"
-                whileHover={{
-                  scale: 1.02,
-                  boxShadow: "0 20px 60px -10px rgba(255, 215, 0, 0.3)"
-                }}
-                transition={{ duration: 0.3 }}
+                className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
               >
                 <h3 className="text-2xl font-fredoka font-bold text-white mb-4">Buy WELP Tokens</h3>
                 <div className="space-y-4">
@@ -504,12 +472,10 @@ function App() {
               </motion.div>
 
               <motion.div
-                className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg transition-all duration-300 hover:shadow-2xl hover:shadow-yellow-400/20 hover:-translate-y-1"
-                whileHover={{
-                  scale: 1.02,
-                  boxShadow: "0 20px 60px -10px rgba(255, 215, 0, 0.3)"
-                }}
-                transition={{ duration: 0.3 }}
+                className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
               >
                 <h3 className="text-2xl font-fredoka font-bold text-white mb-4">Sell WELP Tokens</h3>
                 <div className="space-y-4">
