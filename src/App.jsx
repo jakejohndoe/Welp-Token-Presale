@@ -78,9 +78,13 @@ function App() {
   }
 
   const handleSellAfterApproval = useCallback(async () => {
+    // ALWAYS start with clean pending state immediately
+    setSuccessModal(null)
+    setIsTransactionPending(true)
+    showToast('Waiting for wallet confirmation...', 'pending')
+
     try {
       const tokens = parseEther(pendingSellAmount)
-      showToast('Waiting for wallet confirmation...', 'pending')
 
       console.log('Attempting to send sell transaction...')
 
@@ -285,6 +289,12 @@ function App() {
       return
     }
 
+    // ALWAYS start with clean pending state immediately
+    setSuccessModal(null)
+    setPendingBuyAmount(buyAmount)
+    setIsTransactionPending(true)
+    showToast('Waiting for wallet confirmation...', 'pending')
+
     // Clear any existing timeout
     if (transactionTimeoutId) {
       clearTimeout(transactionTimeoutId)
@@ -304,10 +314,6 @@ function App() {
     try {
       const tokens = parseEther(buyAmount)
       const cost = (tokens * buyPrice) / BigInt(10 ** 18)
-
-      setPendingBuyAmount(buyAmount)
-      setIsTransactionPending(true)
-      showToast('Waiting for wallet confirmation...', 'pending')
 
       console.log('Attempting to send buy transaction...')
 
@@ -354,6 +360,12 @@ function App() {
       return
     }
 
+    // ALWAYS start with clean pending state immediately
+    setSuccessModal(null)
+    setPendingSellAmount(sellAmount)
+    setIsTransactionPending(true)
+    showToast('Waiting for wallet confirmation...', 'pending')
+
     // Clear any existing timeout
     if (transactionTimeoutId) {
       clearTimeout(transactionTimeoutId)
@@ -372,10 +384,6 @@ function App() {
 
     try {
       const tokens = parseEther(sellAmount)
-
-      setPendingSellAmount(sellAmount)
-      setIsTransactionPending(true)
-      showToast('Waiting for wallet confirmation...', 'pending')
 
       console.log('Attempting to send approval transaction...')
 
