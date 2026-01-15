@@ -252,14 +252,43 @@ function App() {
 
   const supplyPercentage = totalSupply ? (Number(formatEther(totalSupply)) / 1000000 * 100).toFixed(2) : '0'
 
+  const orbConfigs = [
+    { size: 600, top: '5%', left: '10%', color: 'rgba(168,85,247,0.6)', duration: 20 },
+    { size: 500, top: '15%', left: '70%', color: 'rgba(59,130,246,0.5)', duration: 25 },
+    { size: 450, top: '60%', left: '20%', color: 'rgba(236,72,153,0.45)', duration: 22 },
+    { size: 400, top: '40%', left: '50%', color: 'rgba(20,184,166,0.5)', duration: 28 },
+    { size: 350, top: '70%', left: '75%', color: 'rgba(168,85,247,0.4)', duration: 24 },
+    { size: 300, top: '25%', left: '35%', color: 'rgba(236,72,153,0.35)', duration: 26 },
+  ]
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#4F7FFF] to-[#A855F7]">
-      {/* DEBUG: NUCLEAR OPTION - Super Obvious Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-10">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-yellow-500 rounded-full blur-xl opacity-70 border-4 border-red-500" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-blue-500 rounded-full blur-xl opacity-70 border-4 border-green-500" />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-pink-500 rounded-full blur-xl opacity-70 border-4 border-purple-500 -translate-x-1/2 -translate-y-1/2" />
+      {/* ==== Dynamic Network Orbs Background ==== */}
+      <div className="fixed inset-0 pointer-events-none -z-0 overflow-visible">
+        {orbConfigs.map((orb, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full"
+            style={{ width: orb.size, height: orb.size, top: orb.top, left: orb.left, background: `radial-gradient(circle, ${orb.color} 0%, transparent 10%)` }}
+            animate={{
+              x: [0, 40, -30, 0],
+              y: [0, 25, -20, 0],
+              scale: [1, 1.05, 0.95, 1],
+              opacity: [0.2, 0.35, 0.25, 0.2]
+            }}
+            transition={{ duration: orb.duration, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        ))}
+
+        <svg className="absolute inset-0 w-full h-full">
+          {/* Subtle network lines connecting orbs */}
+          <line x1="100" y1="100" x2="500" y2="400" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+          <line x1="600" y1="200" x2="400" y2="500" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+          <line x1="200" y1="400" x2="550" y2="250" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+          <line x1="300" y1="150" x2="650" y2="600" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+        </svg>
       </div>
+
       {/* Navbar */}
       <motion.nav
         className="flex items-center justify-between pl-2 pr-8 py-1"
