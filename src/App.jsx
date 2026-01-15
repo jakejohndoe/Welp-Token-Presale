@@ -268,7 +268,7 @@ function App() {
           <img
             src="/icons/light-footer-logo.png"
             alt="Welp"
-            className="h-64 hover:opacity-80 transition-opacity"
+            className="h-52 hover:opacity-80 transition-opacity"
           />
         </a>
         <div className="ml-auto">
@@ -283,7 +283,7 @@ function App() {
 
       {isConnected && (
         <motion.div
-          className="absolute top-16 right-6 bg-white/10 backdrop-blur-sm rounded-2xl p-3 border border-white/30 shadow-lg z-40 w-auto min-w-[265px]"
+          className="absolute top-16 right-6 bg-white/15 backdrop-blur-md rounded-2xl p-3 border border-white/30 shadow-lg z-40 w-auto min-w-[265px]"
           initial={{ opacity: 0, x: 100, y: -20 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
@@ -383,7 +383,7 @@ function App() {
 
         {/* Supply Tracker */}
         <motion.div
-          className="bg-white/10 backdrop-blur-sm rounded-3xl p-3 mb-3 border border-white/30 shadow-lg max-w-4xl mx-auto"
+          className="bg-white/15 backdrop-blur-md rounded-3xl p-3 mb-3 border border-white/30 shadow-lg max-w-4xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -431,7 +431,7 @@ function App() {
               transition={{ duration: 0.5, delay: 0.4 }}
             >
               <motion.div
-                className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg"
+                className="bg-white/15 backdrop-blur-md rounded-3xl p-6 border border-white/30 shadow-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
@@ -472,7 +472,7 @@ function App() {
               </motion.div>
 
               <motion.div
-                className="bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/30 shadow-lg"
+                className="bg-white/15 backdrop-blur-md rounded-3xl p-6 border border-white/30 shadow-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}

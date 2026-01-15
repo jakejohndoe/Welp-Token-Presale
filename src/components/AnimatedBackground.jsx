@@ -18,39 +18,58 @@ const AnimatedBackground = () => {
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 0.2;
-        this.vy = (Math.random() - 0.5) * 0.2;
-        this.radius = Math.random() * 2 + 1;
-        this.opacity = Math.random() * 0.5 + 0.3;
+        this.vx = (Math.random() - 0.5) * 0.3; // 0.15 → 0.3 (2x faster)
+        this.vy = (Math.random() - 0.5) * 0.3;
+        this.radius = Math.random() * 3 + 2; // 2-5px (bigger orbs)
+
+        // ADD PULSING:
+        this.pulsePhase = Math.random() * Math.PI * 2; // Random start
+        this.pulseSpeed = 0.008 + Math.random() * 0.004; // VERY SLOW: 0.008-0.012
       }
 
       update() {
         this.x += this.vx;
         this.y += this.vy;
 
+        // Bounce off edges
         if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
         if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
 
-        this.x = Math.max(0, Math.min(canvas.width, this.x));
-        this.y = Math.max(0, Math.min(canvas.height, this.y));
+        // UPDATE PULSE:
+        this.pulsePhase += this.pulseSpeed;
       }
 
       draw() {
+        // CALCULATE PULSE VALUES (very subtle):
+        const pulseSize = this.radius + Math.sin(this.pulsePhase) * 0.3; // ±0.3px
+        const pulseOpacity = 0.5 + Math.sin(this.pulsePhase) * 0.15; // 0.35-0.65
+
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.arc(this.x, this.y, pulseSize, 0, Math.PI * 2);
+
+        const gradient = ctx.createRadialGradient(
+          this.x, this.y, 0,
+          this.x, this.y, pulseSize
+        );
+        gradient.addColorStop(0, `rgba(255, 215, 0, ${pulseOpacity * 0.9})`); // 0.6 → 0.9
+        gradient.addColorStop(1, `rgba(255, 170, 0, ${pulseOpacity * 0.4})`); // 0.2 → 0.4
+
+        ctx.fillStyle = gradient;
         ctx.fill();
       }
     }
 
+    // Create particles - keep at 35 for good network density
     const particles = [];
     for (let i = 0; i < 35; i++) {
       particles.push(new Particle());
     }
 
+    // Animation loop
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Draw lines between nearby particles
       particles.forEach((p1, i) => {
         particles.slice(i + 1).forEach(p2 => {
           const dx = p1.x - p2.x;
@@ -61,14 +80,15 @@ const AnimatedBackground = () => {
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
-            const opacity = (1 - distance / 200) * 0.12;
-            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-            ctx.lineWidth = 0.8;
+            const opacity = (1 - distance / 200) * 0.2; // 0.1 → 0.2 (2x brighter)
+            ctx.strokeStyle = `rgba(255, 215, 0, ${opacity})`; // Yellow lines
+            ctx.lineWidth = 1;
             ctx.stroke();
           }
         });
       });
 
+      // Update and draw particles
       particles.forEach(particle => {
         particle.update();
         particle.draw();
@@ -88,7 +108,7 @@ const AnimatedBackground = () => {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 1 }}
+      style={{ zIndex: 1, opacity: 0.7 }} // 0.5 → 0.7 (more visible)
     />
   );
 };
