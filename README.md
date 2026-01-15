@@ -19,8 +19,9 @@ A professional token presale platform for the WELP token on Ethereum Sepolia tes
 
 **Sepolia Testnet Contracts**:
 
-- Token Address: `[Your WELP Token Address]`
-- Presale Address: `[Your Presale Contract Address]`
+- Token Address: `0xb79DA8e01c761D08B2dAAe5c2A9c51e0ace012ed`
+- Etherscan:`https://sepolia.etherscan.io/address/0xb79da8e01c761d08b2daae5c2a9c51e0ace012ed`
+- Presale Address: `0x19B961BE6CAC93e13988E67FCEAC43FB75F2AD58`
 
 Get free Sepolia ETH: [Metana Faucet](https://faucet.metana.io/#)
 
