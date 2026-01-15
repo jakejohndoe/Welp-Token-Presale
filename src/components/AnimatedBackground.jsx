@@ -59,14 +59,51 @@ const AnimatedBackground = () => {
       }
     }
 
+    class DataPacket {
+      constructor(x1, y1, x2, y2) {
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x2;
+        this.y2 = y2;
+        this.progress = 0;
+        this.speed = 0.005 + Math.random() * 0.003; // SLOW: 0.005-0.008
+      }
+
+      update() {
+        this.progress += this.speed;
+        return this.progress < 1; // Return false when journey complete
+      }
+
+      draw(ctx) {
+        const x = this.x1 + (this.x2 - this.x1) * this.progress;
+        const y = this.y1 + (this.y2 - this.y1) * this.progress;
+
+        // Draw bright yellow dot
+        ctx.beginPath();
+        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.95)';
+        ctx.fill();
+
+        // Add subtle glow
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
+        ctx.fill();
+        ctx.shadowBlur = 0; // Reset shadow
+      }
+    }
+
     // Create particles - keep at 35 for good network density
     const particles = [];
     for (let i = 0; i < 35; i++) {
       particles.push(new Particle());
     }
 
+    const dataPackets = [];
+    let lastPacketSpawn = 0;
+
     // Animation loop
     const animate = () => {
+      const now = Date.now();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Draw lines between nearby particles
@@ -84,9 +121,25 @@ const AnimatedBackground = () => {
             ctx.strokeStyle = `rgba(255, 215, 0, ${opacity})`; // Yellow lines
             ctx.lineWidth = 1;
             ctx.stroke();
+
+            // SPAWN DATA PACKETS (rarely, only if not too many exist)
+            // Spawn every 2-3 seconds, max 3 packets at once
+            if (dataPackets.length < 3 && now - lastPacketSpawn > 2000 && Math.random() < 0.002) {
+              dataPackets.push(new DataPacket(p1.x, p1.y, p2.x, p2.y));
+              lastPacketSpawn = now;
+            }
           }
         });
       });
+
+      // Update and draw data packets
+      for (let i = dataPackets.length - 1; i >= 0; i--) {
+        if (!dataPackets[i].update()) {
+          dataPackets.splice(i, 1); // Remove completed packets
+        } else {
+          dataPackets[i].draw(ctx);
+        }
+      }
 
       // Update and draw particles
       particles.forEach(particle => {
