@@ -1,6 +1,6 @@
 # WELP Token Presale DApp
 
-A professional token presale platform for the WELP token on Ethereum Sepolia testnet, featuring an interactive network visualization and modern Web3 integration.
+A professional (testnet) token presale platform for the WELP token on Ethereum Sepolia testnet, featuring an interactive network visualization and modern Web3 integration.
 
 ![WELP Token Presale](https://img.shields.io/badge/Sepolia-Testnet-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
