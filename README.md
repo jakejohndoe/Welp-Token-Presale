@@ -18,7 +18,7 @@ A professional (testnet) token presale platform for the WELP token on Ethereum S
 
 ## 🚀 Live Demo
 
-**Deployed on Vercel**: [Your Vercel URL here]
+**Deployed on Vercel**: presale.sepolia.welp.network
 
 **Sepolia Testnet Contracts**:
 
