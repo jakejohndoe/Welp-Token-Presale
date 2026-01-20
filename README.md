@@ -192,7 +192,7 @@ This is a bootcamp project, but PRs for bug fixes are welcome!
 
 ## 🎓 Built By
 
-Jakob Johnson - Metana Blockchain Development Bootcamp Graduate (January 2026)
+Jakob Johnson - Metana Web3 Dev Bootcamp Graduate (March 2026)
 
 ---
 
