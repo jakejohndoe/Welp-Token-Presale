@@ -188,11 +188,11 @@ This is a bootcamp project, but PRs for bug fixes are welcome!
 
 - **Welp Network**: [welp.network](https://welp.network)
 - **Metana Bootcamp**: [metana.io](https://metana.io)
-- **Twitter**: [@yourhandle](https://twitter.com/yourhandle)
+- **Twitter**: [@jakejohnhello](https://twitter.com/jakejohnhello)
 
 ## 🎓 Built By
 
-Jakob Johnson - Metana Web3 Dev Bootcamp Graduate (March 2026)
+Jakob Johnson - Metana Web3 Dev Bootcamp Graduate (~March 2026)
 
 ---
 
