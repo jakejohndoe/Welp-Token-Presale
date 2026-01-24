@@ -182,7 +182,7 @@ MIT License - feel free to use this project for learning or building your own pr
 
 ## 🤝 Contributing
 
-This is a bootcamp project, but PRs for bug fixes are welcome!
+This is a bootcamp project, but PRs for bug fixes are always welcome!
 
 ## 🔗 Links
 
