@@ -174,7 +174,7 @@ npm test
 # 1. Get Sepolia ETH from faucet
 # 2. Connect wallet to app
 # 3. Try buying/selling WELP tokens
-# 4. Check success metric
+# 4. Check success metrics
 ```
 
 ## 📝 License
