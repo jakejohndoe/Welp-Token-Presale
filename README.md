@@ -141,7 +141,7 @@ Or use the Vercel GitHub integration for automatic deployments.
 
 ### Contract Deployment
 
-Contracts are already deployed on Sepolia testnet. To deploy your own:
+Contracts are already deployed on Sepolia testnet! To deploy your own:
 
 ```bash
 cd contracts
