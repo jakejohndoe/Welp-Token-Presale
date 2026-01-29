@@ -35,7 +35,7 @@ Get free Sepolia ETH: [Metana Faucet](https://faucet.metana.io/#)
 - **Animations**: Framer Motion
 - **Web3**: RainbowKit, wagmi, viem
 - **Smart Contracts**: Solidity, deployed on SepoliaETH
-- **Blockchain**: Ethereum Sepolia Testnet
+- **Blockchain**: ETH Sepolia Testnet
 
 ## 📦 Installation
 
